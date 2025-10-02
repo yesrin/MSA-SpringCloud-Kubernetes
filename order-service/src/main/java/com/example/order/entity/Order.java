@@ -1,5 +1,6 @@
 package com.example.order.entity;
 
+import com.example.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
