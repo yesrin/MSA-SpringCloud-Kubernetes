@@ -1,0 +1,6 @@
+rootProject.name = 'msa-spring-cloud-kubernetes'
+
+include 'common'
+include 'user-service'
+include 'order-service'
+include 'api-gateway'
