@@ -2,7 +2,9 @@ version: '3.8'
 
 services:
   eureka-server:
-    build: ./eureka-server
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
     ports:
       - "8761:8761"
     environment:
@@ -11,7 +13,9 @@ services:
       - msa-network
 
   user-service:
-    build: ./user-service
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
     ports:
       - "8081:8081"
     environment:
@@ -23,7 +27,9 @@ services:
       - msa-network
 
   order-service:
-    build: ./order-service
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
     ports:
       - "8082:8082"
     environment:
@@ -36,7 +42,9 @@ services:
       - msa-network
 
   api-gateway:
-    build: ./api-gateway
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
     ports:
       - "8080:8080"
     environment:

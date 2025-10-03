@@ -62,6 +62,11 @@ hs_err_pid*
 # Docker
 docker-compose.override.yml
 
+# Environment variables
+.env
+.env.*
+!.env.example
+
 # Temporary files
 *.tmp
 *.bak
