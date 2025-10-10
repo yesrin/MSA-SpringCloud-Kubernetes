@@ -5,10 +5,12 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "orders",
+        indexes = @Index(name = "idx_user_id", columnList = "userId"))
 @Getter
 @Setter
 @NoArgsConstructor

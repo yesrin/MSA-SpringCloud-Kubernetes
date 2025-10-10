@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  eureka-server:
+    build:
+      context: .
+      dockerfile: eureka-server/Dockerfile
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - msa-network
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+    networks:
+      - msa-network
+
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+      - user-service
+    networks:
+      - msa-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+      - user-service
+      - order-service
+    networks:
+      - msa-network
+
+networks:
+  msa-network:
+    driver: bridge
