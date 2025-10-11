@@ -8,7 +8,6 @@ COPY gradle ./gradle
 
 # Copy source code
 COPY config-server ./config-server
-COPY common ./common
 
 # Build the application
 RUN gradle :config-server:bootJar --no-daemon
@@ -16,6 +15,12 @@ RUN gradle :config-server:bootJar --no-daemon
 # Runtime stage
 FROM eclipse-temurin:21-jre
 WORKDIR /app
+
+# Install curl for healthcheck
+RUN apt-get update && \
+    apt-get install -y curl && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Create non-root user for security
 RUN addgroup --system spring && adduser --system --ingroup spring spring

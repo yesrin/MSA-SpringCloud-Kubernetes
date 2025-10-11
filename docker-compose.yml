@@ -4,11 +4,13 @@ services:
   mysql-user:
     image: mysql:8.0
     container_name: mysql-user
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: userdb
       MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -24,11 +26,13 @@ services:
   mysql-order:
     image: mysql:8.0
     container_name: mysql-order
+    env_file:
+      - .env
     environment:
-      MYSQL_ROOT_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: orderdb
       MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
     ports:
       - "3307:3306"
     volumes:
@@ -65,6 +69,12 @@ services:
       - eureka-server
     networks:
       - msa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
 
   user-service:
     build:
@@ -72,20 +82,22 @@ services:
       dockerfile: user-service/Dockerfile
     ports:
       - "8081:8081"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
       - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-user:3306/userdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_USER_PASSWORD}
     depends_on:
       mysql-user:
         condition: service_healthy
       eureka-server:
         condition: service_started
       config-server:
-        condition: service_started
+        condition: service_healthy
     networks:
       - msa-network
 
@@ -103,7 +115,7 @@ services:
       eureka-server:
         condition: service_started
       config-server:
-        condition: service_started
+        condition: service_healthy
       user-service:
         condition: service_started
     networks:
@@ -123,7 +135,7 @@ services:
       eureka-server:
         condition: service_started
       config-server:
-        condition: service_started
+        condition: service_healthy
       user-service:
         condition: service_started
       order-service:

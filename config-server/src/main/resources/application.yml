@@ -12,6 +12,15 @@ spring:
         native:
           search-locations: classpath:/config  # 설정 파일 위치
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
 eureka:
   client:
     service-url:
