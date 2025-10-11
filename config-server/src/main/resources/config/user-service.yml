@@ -1,9 +1,7 @@
-spring:
-  application:
-    name: user-service
-  config:
-    import: optional:configserver:http://localhost:8888
+server:
+  port: 8081
 
+spring:
   datasource:
     url: jdbc:h2:mem:userdb
     driverClassName: org.h2.Driver
@@ -23,9 +21,6 @@ spring:
       hibernate:
         format_sql: true
 
-server:
-  port: 8081
-
 eureka:
   client:
     service-url:
@@ -36,3 +31,9 @@ eureka:
 logging:
   level:
     com.example: DEBUG
+
+# 추가 설정: 비즈니스 로직 관련
+app:
+  user:
+    default-role: USER
+    max-login-attempts: 5

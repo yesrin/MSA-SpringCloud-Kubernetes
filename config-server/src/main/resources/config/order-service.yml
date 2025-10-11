@@ -1,11 +1,9 @@
-spring:
-  application:
-    name: user-service
-  config:
-    import: optional:configserver:http://localhost:8888
+server:
+  port: 8082
 
+spring:
   datasource:
-    url: jdbc:h2:mem:userdb
+    url: jdbc:h2:mem:orderdb
     driverClassName: org.h2.Driver
     username: sa
     password:
@@ -19,12 +17,6 @@ spring:
     hibernate:
       ddl-auto: create-drop
     show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
-server:
-  port: 8081
 
 eureka:
   client:
@@ -36,3 +28,9 @@ eureka:
 logging:
   level:
     com.example: DEBUG
+
+# 추가 설정: 비즈니스 로직 관련
+app:
+  order:
+    max-order-amount: 1000000
+    delivery-fee: 3000
