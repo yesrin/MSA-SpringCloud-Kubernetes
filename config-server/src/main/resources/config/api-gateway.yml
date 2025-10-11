@@ -1,0 +1,71 @@
+server:
+  port: 8080
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        # User Service 라우팅
+        - id: user-service
+          uri: lb://user-service  # lb = load balanced (Eureka로 찾기)
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userServiceCircuitBreaker
+                fallbackUri: forward:/fallback/user-service
+            - RewritePath=/api/users/(?<segment>.*), /$\{segment}
+
+        # Order Service 라우팅
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: orderServiceCircuitBreaker
+                fallbackUri: forward:/fallback/order-service
+            - RewritePath=/api/orders/(?<segment>.*), /$\{segment}
+
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+
+# Resilience4j Circuit Breaker 설정
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10  # 최근 10개 요청 기준으로 판단
+        minimumNumberOfCalls: 5  # 최소 5번 호출 후 동작
+        failureRateThreshold: 50  # 실패율 50% 이상이면 OPEN
+        waitDurationInOpenState: 10000  # OPEN 상태에서 10초 대기
+        permittedNumberOfCallsInHalfOpenState: 3  # HALF_OPEN에서 3번 테스트
+        slowCallDurationThreshold: 2000  # 2초 이상이면 느린 호출
+        slowCallRateThreshold: 50  # 느린 호출 50% 이상이면 OPEN
+    instances:
+      userServiceCircuitBreaker:
+        baseConfig: default
+      orderServiceCircuitBreaker:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s  # 3초 타임아웃
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    io.github.resilience4j: DEBUG

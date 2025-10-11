@@ -1,0 +1,31 @@
+server:
+  port: 8888
+
+spring:
+  application:
+    name: config-server
+  cloud:
+    config:
+      server:
+        native:
+          search-locations: classpath:/config
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/  # Docker 환경용
+  instance:
+    prefer-ip-address: true
+
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG

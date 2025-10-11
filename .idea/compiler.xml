@@ -2,6 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
       <profile name="Gradle Imported" enabled="true">
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="false">
@@ -10,6 +11,7 @@
         <module name="msa-spring-cloud-kubernetes.eureka-server.main" />
         <module name="msa-spring-cloud-kubernetes.api-gateway.main" />
         <module name="msa-spring-cloud-kubernetes.common.main" />
+        <module name="msa-spring-cloud-kubernetes.config-server.main" />
         <module name="msa-spring-cloud-kubernetes.user-service.main" />
         <module name="msa-spring-cloud-kubernetes.order-service.main" />
       </profile>

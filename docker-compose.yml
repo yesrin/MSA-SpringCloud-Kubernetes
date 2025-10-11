@@ -1,6 +1,50 @@
 version: '3.8'
 
 services:
+  mysql-user:
+    image: mysql:8.0
+    container_name: mysql-user
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: userdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-user-data:/var/lib/mysql
+    networks:
+      - msa-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql-order:
+    image: mysql:8.0
+    container_name: mysql-order
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: orderdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: ${MYSQL_USER_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-order-data:/var/lib/mysql
+    networks:
+      - msa-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   eureka-server:
     build:
       context: .
@@ -12,17 +56,51 @@ services:
     networks:
       - msa-network
 
+  config-server:
+    build:
+      context: .
+      dockerfile: config-server/Dockerfile
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker,native
+      - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+    networks:
+      - msa-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
   user-service:
     build:
       context: .
       dockerfile: user-service/Dockerfile
     ports:
       - "8081:8081"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-user:3306/userdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_USER_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQLDialect
+      - SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration
     depends_on:
-      - eureka-server
+      mysql-user:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
     networks:
       - msa-network
 
@@ -32,12 +110,27 @@ services:
       dockerfile: order-service/Dockerfile
     ports:
       - "8082:8082"
+    env_file:
+      - .env
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-order:3306/orderdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      - SPRING_DATASOURCE_USERNAME=user
+      - SPRING_DATASOURCE_PASSWORD=${MYSQL_USER_PASSWORD}
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MySQLDialect
+      - SPRING_AUTOCONFIGURE_EXCLUDE=org.springframework.boot.autoconfigure.h2.H2ConsoleAutoConfiguration
     depends_on:
-      - eureka-server
-      - user-service
+      mysql-order:
+        condition: service_healthy
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+      user-service:
+        condition: service_started
     networks:
       - msa-network
 
@@ -49,14 +142,24 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
-      - eureka-server
-      - user-service
-      - order-service
+      eureka-server:
+        condition: service_started
+      config-server:
+        condition: service_healthy
+      user-service:
+        condition: service_started
+      order-service:
+        condition: service_started
     networks:
       - msa-network
 
 networks:
   msa-network:
     driver: bridge
+
+volumes:
+  mysql-user-data:
+  mysql-order-data:
