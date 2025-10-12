@@ -2,6 +2,8 @@ server:
   port: 8082
 
 spring:
+  application:
+    name: order-service
   datasource:
     url: jdbc:mysql://mysql-order:3306/orderdb?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
     driverClassName: com.mysql.cj.jdbc.Driver
@@ -33,3 +35,32 @@ app:
   order:
     max-order-amount: 1000000
     delivery-fee: 3000
+
+# Distributed Tracing - Zipkin
+management:
+  tracing:
+    sampling:
+      probability: 1.0  # 100% 샘플링 (개발 환경, 운영에서는 0.1 권장)
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+# Resilience4j Circuit Breaker 설정 (서비스 간 호출용)
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+    instances:
+      userClient:  # Feign Client 이름
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 3s
