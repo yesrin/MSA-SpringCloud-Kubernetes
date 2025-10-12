@@ -29,6 +29,7 @@ public class Order extends BaseEntity {
     private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private OrderStatus status = OrderStatus.PENDING;
 
     public Order(Long userId, String productName, Integer quantity, BigDecimal price) {
@@ -37,8 +38,4 @@ public class Order extends BaseEntity {
         this.quantity = quantity;
         this.price = price;
     }
-}
-
-enum OrderStatus {
-    PENDING, CONFIRMED, SHIPPED, DELIVERED, CANCELLED
 }

@@ -29,6 +29,8 @@ eureka:
 logging:
   level:
     com.example: DEBUG
+    com.example.order.client: DEBUG
+    feign: DEBUG
 
 # 추가 설정: 비즈니스 로직 관련
 app:
@@ -41,6 +43,8 @@ management:
   tracing:
     sampling:
       probability: 1.0  # 100% 샘플링 (개발 환경, 운영에서는 0.1 권장)
+    propagation:
+      type: b3  # Zipkin B3 propagation format
   zipkin:
     tracing:
       endpoint: http://zipkin:9411/api/v2/spans
