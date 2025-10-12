@@ -238,11 +238,46 @@ Spring Boot 3.x로 마이그레이션 시:
 ### Q3. B3 vs W3C Propagation?
 
 **A:**
-| 특징 | B3 (Zipkin) | W3C |
-|------|-------------|-----|
-| 헤더 | `X-B3-TraceId` | `traceparent` |
-| 표준 | Zipkin 표준 | W3C 국제 표준 |
-| 권장 | 기존 Zipkin 사용 중 | 새 프로젝트 |
+
+**B3 (Zipkin Propagation)**
+
+헤더 형식 - Multi 방식:
+```http
+X-B3-TraceId: 68eb6934747c42b7237d7d4de82a0276
+X-B3-SpanId: 237d7d4de82a0276
+X-B3-ParentSpanId: 68eb6934747c42b7
+X-B3-Sampled: 1
+```
+
+헤더 형식 - Single 방식:
+```http
+b3: 68eb6934747c42b7237d7d4de82a0276-237d7d4de82a0276-1
+    └─────────── TraceId ──────────────┘ └─── SpanId ────┘ │
+                                                         Sampled
+```
+
+- Zipkin 프로젝트 표준
+- 레거시 시스템 지원
+- Brave, Zipkin 완벽 호환
+
+**W3C Trace Context**
+
+헤더 형식:
+```http
+traceparent: 00-68eb6934747c42b7237d7d4de82a0276-237d7d4de82a0276-01
+             │  └─────────── TraceId ──────────────┘ └─── SpanId ────┘ │
+             │                                                        Sampled
+           Version
+```
+
+- W3C 국제 표준 (2020년)
+- OpenTelemetry 기본 포맷
+- 최신 APM 도구 지원
+
+**선택 기준:**
+- 기존 Zipkin 사용 중 → B3
+- 새 프로젝트 → W3C
+- 둘 다 지원: `type: b3,w3c`
 
 ### Q4. OpenFeign에서 trace context 자동 전파 안 되는 이유?
 
