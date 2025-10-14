@@ -6,6 +6,7 @@ import com.example.order.dto.UserResponse;
 import com.example.order.entity.Order;
 import com.example.order.repository.OrderRepository;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class OrderService {
     private final UserClient userClient;
 
     @CircuitBreaker(name = "userClient", fallbackMethod = "createOrderFallback")
+    @TimeLimiter(name = "userClient")
     public Order createOrder(CreateOrderRequest request) {
         // 분산 추적 테스트: User Service 호출하여 사용자 검증
         log.info("주문 생성 요청 - userId: {}, productName: {}", request.getUserId(), request.getProductName());
@@ -70,6 +72,7 @@ public class OrderService {
     }
 
     @CircuitBreaker(name = "userClient", fallbackMethod = "getOrdersWithUserFallback")
+    @TimeLimiter(name = "userClient")
     public List<OrderWithUserResponse> getOrdersWithUserInfo(Long userId) {
         log.info("[Order Service] 사용자의 주문 목록 조회 시작 - userId: {}", userId);
 
