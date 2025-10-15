@@ -4,6 +4,7 @@ import com.example.user.entity.User;
 import com.example.user.service.UserService;
 import com.example.user.service.UserService.CreateUserRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -32,7 +34,9 @@ public class UserController {
 
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
+        log.info("[User Controller] 사용자 조회 API 호출됨 - userId: {}", id);
         User user = userService.getUserById(id);
+        log.info("[User Controller] 사용자 조회 완료 - userId: {}, userName: {}", user.getId(), user.getName());
         return ResponseEntity.ok(user);
     }
 

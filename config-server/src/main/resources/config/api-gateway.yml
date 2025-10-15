@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  application:
+    name: api-gateway
   cloud:
     gateway:
       routes:
@@ -69,3 +71,12 @@ logging:
   level:
     org.springframework.cloud.gateway: DEBUG
     io.github.resilience4j: DEBUG
+
+# Distributed Tracing - Zipkin
+management:
+  tracing:
+    sampling:
+      probability: 1.0  # 100% 샘플링 (개발 환경, 운영에서는 0.1 권장)
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
