@@ -28,17 +28,16 @@ public class OrderController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getOrders(@RequestParam(required = false) Long userId) {
-        if (userId != null) {
-            // userId가 있으면 Order + User 정보 함께 반환
-            log.info("[Order Controller] userId로 주문 조회 (User 정보 포함) - userId: {}", userId);
-            List<OrderWithUserResponse> ordersWithUser = orderService.getOrdersWithUserInfo(userId);
-            return ResponseEntity.ok(ordersWithUser);
-        } else {
-            // userId가 없으면 전체 주문 조회 (Order만)
-            log.info("[Order Controller] 전체 주문 조회");
-            List<Order> orders = orderService.getAllOrders();
-            return ResponseEntity.ok(orders);
-        }
+    public ResponseEntity<List<Order>> getAllOrders() {
+        log.info("[Order Controller] 전체 주문 조회");
+        List<Order> orders = orderService.getAllOrders();
+        return ResponseEntity.ok(orders);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<OrderWithUserResponse>> getOrdersByUserId( Long userId) {
+        log.info("[Order Controller] userId로 주문 조회 (User 정보 포함) - userId: {}", userId);
+        List<OrderWithUserResponse> ordersWithUser = orderService.getOrdersWithUserInfo(userId);
+        return ResponseEntity.ok(ordersWithUser);
     }
 }
